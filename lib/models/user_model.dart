@@ -22,16 +22,20 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'],
-      name: json['name'],
-      username: json['username'],
-      email: json['email'],
-      phone: json['phone'],
-      website: json['website'],
+      id: json['id'] as int? ?? -1,
+      name: json['name'] as String? ?? 'Unknown',
+      username: json['username'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      phone: json['phone'] as String? ?? '',
+      website: json['website'] as String? ?? '',
 
-      address: Address.fromJson(json['address']),
+      address: json['address'] != null
+          ? Address.fromJson(json['address'])
+          : Address.empty(),
 
-      company: Company.fromJson(json['company']),
+      company: json['company!'] != null
+          ? Company.fromJson(json['company'])
+          : Company.empty(),
     );
   }
 }
@@ -42,6 +46,8 @@ class Address {
   final Geo geo;
 
   Address({required this.street, required this.city, required this.geo});
+
+  Address.empty() : street = '', city = '', geo = Geo.empty();
 
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(
@@ -59,6 +65,8 @@ class Geo {
 
   Geo({required this.lat, required this.lng});
 
+  Geo.empty() : lat = '', lng = '';
+
   factory Geo.fromJson(Map<String, dynamic> json) {
     return Geo(lat: json['lat'], lng: json['lng']);
   }
@@ -68,6 +76,8 @@ class Company {
   final String name;
 
   Company({required this.name});
+
+  Company.empty() : name = '';
 
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(name: json['name']);
