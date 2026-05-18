@@ -33,7 +33,7 @@ class UserModel {
           ? Address.fromJson(json['address'])
           : Address.empty(),
 
-      company: json['company!'] != null
+      company: json['company'] != null
           ? Company.fromJson(json['company'])
           : Company.empty(),
     );
@@ -80,6 +80,6 @@ class Company {
   Company.empty() : name = '';
 
   factory Company.fromJson(Map<String, dynamic> json) {
-    return Company(name: json['name']);
+    return Company(name: json['name'] ?? '');
   }
 }

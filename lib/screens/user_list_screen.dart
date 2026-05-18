@@ -22,35 +22,68 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('users')),
+      appBar: AppBar(title: const Text('Users')),
 
       body: FutureBuilder<List<UserModel>>(
         future: userFuture,
         builder: (context, snapshot) {
+          // Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
+          // Error
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
           }
 
+          // Data
           final users = snapshot.data!;
 
           return ListView.builder(
             itemCount: users.length,
+
             itemBuilder: (context, index) {
               final user = users[index];
 
-              return ListTile(
-                title: Text(user.name),
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
 
-                subtitle: Text(user.email),
+                child: Card(
+                  elevation: 4,
 
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => UserDetailScreen(user: user),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(12),
+
+                    leading: CircleAvatar(child: Text(user.name[0])),
+
+                    title: Text(
+                      user.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+
+                    subtitle: Text(user.email),
+
+                    trailing: const Icon(Icons.arrow_forward_ios),
+
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserDetailScreen(user: user),
+                        ),
+                      );
+                    },
                   ),
                 ),
               );

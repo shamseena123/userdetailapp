@@ -11,37 +11,85 @@ class UserDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(user.name)),
 
-      body: Padding(
-        padding: EdgeInsets.all(16),
-
+      body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
 
           children: [
-            Text('Name:${user.name}'),
+            const SizedBox(height: 30),
 
-            Text('Username:${user.username}'),
+            CircleAvatar(
+              radius: 50,
+              child: Text(
+                user.name[0],
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
 
-            Text('Email:${user.email}'),
+            _buildInfoCard(
+              icon: Icons.email,
+              title: "email",
+              value: user.email,
+            ),
 
-            Text('phone:${user.phone}'),
+            _buildInfoCard(
+              icon: Icons.phone,
+              title: "phone",
+              value: user.phone,
+            ),
 
-            Text('Website:${user.website}'),
+            _buildInfoCard(
+              icon: Icons.web,
+              title: "website",
+              value: user.website,
+            ),
+
+            _buildInfoCard(
+              icon: Icons.apartment,
+              title: "company",
+              value: user.company.name,
+            ),
 
             SizedBox(height: 15),
 
-            Text('Company name:${user.company.name}'),
+            _buildInfoCard(
+              icon: Icons.location_on,
+              title: "Address",
+              value: "${user.address.street},${user.address.city}",
+            ),
 
-            Text('Address:'),
-
-            Text('${user.address.street}'),
-            Text('${user.address.city}'),
-
-            SizedBox(height: 15),
-
-            Text('latitude:${user.address.geo.lat}'),
-            Text('longtitude:${'user.address.geo.lng'}'),
+            _buildInfoCard(
+              icon: Icons.map,
+              title: "location cordinate",
+              value: "lat:${user.address.geo.lat},lng:${user.address.geo.lng}",
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+        child: ListTile(
+          leading: Icon(icon, color: Colors.blue),
+          title: Text(title),
+          subtitle: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
         ),
       ),
     );
