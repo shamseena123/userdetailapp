@@ -11,86 +11,302 @@ class UserListScreen extends StatefulWidget {
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  late Future<List<UserModel>> userFuture;
+  List<UserModel> allUsers = [];
+  List<UserModel> filteredUsers = [];
+
+  String searchQuery = "";
+  String selectedCompany = "Company";
+  bool isAscending = true;
+  bool isLoading = true;
+  String sortOption = "Default";
 
   @override
   void initState() {
     super.initState();
-    userFuture = ApiServices().fetchUsers();
+    fetchUsers();
+  }
+
+  Future<void> fetchUsers() async {
+    final users = await ApiServices().fetchUsers();
+
+    setState(() {
+      allUsers = users;
+      filteredUsers = users;
+      isLoading = false;
+    });
+  }
+
+  void applyFilters() {
+    List<UserModel> users = List.from(allUsers);
+
+    if (searchQuery.isNotEmpty) {
+      users = users.where((user) {
+        return user.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().contains(searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    if (selectedCompany != "All" && selectedCompany != "Company") {
+      users = users
+          .where((user) => user.company.name == selectedCompany)
+          .toList();
+    }
+
+    if (sortOption == "A-Z") {
+      users.sort((a, b) => a.name.compareTo(b.name));
+    } else if (sortOption == "a-z") {
+      users.sort((a, b) => b.name.compareTo(a.name));
+    }
+    setState(() {
+      filteredUsers = users;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Users')),
+      appBar: AppBar(
+        toolbarHeight: 80,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-      body: FutureBuilder<List<UserModel>>(
-        future: userFuture,
-        builder: (context, snapshot) {
-          // Loading
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          mainAxisAlignment: MainAxisAlignment.center,
 
-          // Error
-          if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
-          }
+          children: [
+            Text(
+              "USERS",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
 
-          // Data
-          final users = snapshot.data!;
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Icon(Icons.people, size: 28, color: Colors.white),
+          ),
+        ],
+        backgroundColor: Colors.deepOrangeAccent,
+      ),
 
-          return ListView.builder(
-            itemCount: users.length,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Center(
+                  child: SizedBox(
+                    width: 320,
 
-            itemBuilder: (context, index) {
-              final user = users[index];
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: "search name or email",
+                          prefixIcon: Icon(Icons.search),
+                          suffixIcon: searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear),
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                                  onPressed: () {
+                                    setState(() {
+                                      searchQuery = "";
+                                    });
 
-                child: Card(
-                  elevation: 4,
+                                    applyFilters();
+                                  },
+                                )
+                              : null,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
 
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
+                            borderSide: const BorderSide(width: 2.5),
+                          ),
 
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(width: 2.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(width: 3),
+                          ),
+                        ),
 
-                    leading: CircleAvatar(child: Text(user.name[0])),
-
-                    title: Text(
-                      user.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        onChanged: (value) {
+                          searchQuery = value;
+                          applyFilters();
+                        },
                       ),
                     ),
-
-                    subtitle: Text(user.email),
-
-                    trailing: const Icon(Icons.arrow_forward_ios),
-
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UserDetailScreen(user: user),
-                        ),
-                      );
-                    },
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 5,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+
+                    child: Text(
+                      "${filteredUsers.length} user found",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+                      DropdownButton<String>(
+                        value: selectedCompany,
+
+                        items:
+                            [
+                              "Company",
+                              "All",
+                              ...allUsers
+                                  .map((user) => user.company.name)
+                                  .toSet()
+                                  .toList(),
+                            ].map((company) {
+                              return DropdownMenuItem(
+                                value: company,
+                                child: Text(company),
+                              );
+                            }).toList(),
+
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCompany = value!;
+                          });
+                          applyFilters();
+                        },
+                      ),
+
+                      DropdownButton<String>(
+                        value: sortOption,
+
+                        items: ["Default", "A-Z", "Z-A"].map((item) {
+                          return DropdownMenuItem(
+                            value: item,
+
+                            child: Text("Sort:$item"),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            sortOption = value!;
+                          });
+                          applyFilters();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: fetchUsers,
+                    child: filteredUsers.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 80,
+                                  color: Colors.grey,
+                                ),
+
+                                SizedBox(height: 10),
+
+                                Text(
+                                  "No user found",
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                                SizedBox(height: 10),
+
+                                Text(
+                                  "Try changing search or filter",
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: filteredUsers.length,
+
+                            itemBuilder: (context, index) {
+                              final user = filteredUsers[index];
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+
+                                child: Card(
+                                  elevation: 4,
+                                  color: Colors.green.shade100,
+
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.all(12),
+
+                                    leading: CircleAvatar(
+                                      child: Text(user.name[0]),
+                                    ),
+
+                                    title: Text(
+                                      user.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+
+                                    subtitle: Text(user.email),
+
+                                    trailing: const Icon(
+                                      Icons.arrow_forward_ios,
+                                    ),
+
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              UserDetailScreen(user: user),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

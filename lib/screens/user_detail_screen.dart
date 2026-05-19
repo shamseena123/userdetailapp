@@ -9,7 +9,25 @@ class UserDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(user.name)),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          user.name,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: Icon(Icons.people, size: 28, color: Colors.white),
+          ),
+        ],
+        backgroundColor: const Color.fromARGB(255, 112, 85, 42),
+      ),
 
       body: SingleChildScrollView(
         child: Column(
@@ -27,6 +45,12 @@ class UserDetailScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+
+            _buildInfoCard(
+              icon: Icons.badge,
+              title: "user name",
+              value: user.username,
             ),
 
             _buildInfoCard(
