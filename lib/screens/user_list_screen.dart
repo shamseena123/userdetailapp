@@ -15,7 +15,7 @@ class _UserListScreenState extends State<UserListScreen> {
   List<UserModel> filteredUsers = [];
 
   String searchQuery = "";
-  String selectedCompany = "Company";
+  String selectedCompany = "All";
   bool isAscending = true;
   bool isLoading = true;
   String sortOption = "Default";
@@ -46,7 +46,7 @@ class _UserListScreenState extends State<UserListScreen> {
       }).toList();
     }
 
-    if (selectedCompany != "All" && selectedCompany != "Company") {
+    if (selectedCompany != "All") {
       users = users
           .where((user) => user.company.name == selectedCompany)
           .toList();
@@ -54,7 +54,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
     if (sortOption == "A-Z") {
       users.sort((a, b) => a.name.compareTo(b.name));
-    } else if (sortOption == "a-z") {
+    } else if (sortOption == "Z-A") {
       users.sort((a, b) => b.name.compareTo(a.name));
     }
     setState(() {
@@ -171,7 +171,6 @@ class _UserListScreenState extends State<UserListScreen> {
 
                         items:
                             [
-                              "Company",
                               "All",
                               ...allUsers
                                   .map((user) => user.company.name)

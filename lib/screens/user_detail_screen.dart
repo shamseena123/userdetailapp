@@ -106,6 +106,7 @@ class UserDetailScreen extends StatelessWidget {
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: Colors.orangeAccent.shade100,
 
         child: ListTile(
           leading: Icon(icon, color: Colors.blue),
